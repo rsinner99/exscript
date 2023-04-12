@@ -1,0 +1,6 @@
+<rpc>
+<get xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <filter>abc</filter>
+</get>
+</rpc>{extract />([^<]+)</ as test}
+Data: $test

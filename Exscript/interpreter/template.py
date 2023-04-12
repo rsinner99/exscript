@@ -28,6 +28,7 @@ from .code import Code
 from .execute import Execute
 
 grammar = (
+    ('rpc_tag',             r'</?rpc>'),
     ('escaped_data',        r'\\.'),
     ('open_curly_bracket',  '{'),
     ('close_curly_bracket', '}'),
@@ -37,7 +38,7 @@ grammar = (
 
 grammar_c = []
 for thetype, regex in grammar:
-    grammar_c.append((thetype, re.compile(regex)))
+    grammar_c.append((thetype, re.compile(regex, re.DOTALL)))
 
 
 class Template(Scope):
@@ -45,11 +46,19 @@ class Template(Scope):
     def __init__(self, lexer, parser, parent, *args, **kwargs):
         Scope.__init__(self, 'Template', lexer, parser, parent, **kwargs)
         lexer.set_grammar(grammar_c)
-        # print("Opening Scope:", lexer.token())
+        #print("Opening Scope:", lexer.token())
         buffer = ''
+        # identify rpc command
+        rpc = False
         while 1:
             if self.exit_requested or lexer.current_is('EOF'):
                 break
+            elif lexer.current_is('rpc_tag'):
+                rpc = not rpc
+                next(lexer)
+            elif rpc:
+                buffer += lexer.token()[1]
+                next(lexer)
             elif lexer.next_if('open_curly_bracket'):
                 if buffer.strip() != '':
                     self.add(Execute(lexer, parser, self, buffer))
