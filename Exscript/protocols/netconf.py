@@ -43,7 +43,6 @@ class Netconf(Protocol):
                 kwargs["key_filename"] = key_file.name
             elif hasattr(self.account, "password") and self.account.password:
                 kwargs["password"] = self.account.password
-        print(kwargs)
         m = manager.connect(
             host=self.host, 
             port=self.port, 
@@ -86,7 +85,7 @@ class Netconf(Protocol):
         if isinstance(self.rpc_reply, RPCReply):
             self.response = self.rpc_reply.xml
         else:
-            str(self.rpc_reply)
+            self.response = str(self.rpc_reply)
         return None if ignore_result else self.response
     
 
