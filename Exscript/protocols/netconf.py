@@ -1,5 +1,4 @@
 import tempfile
-import socket
 from ncclient import manager
 from ncclient.xml_ import to_ele
 from ncclient.operations.rpc import RPCReply
@@ -72,20 +71,26 @@ class Netconf(Protocol):
         return True
 
 
+    def _get_response(self, data):
+        if isinstance(data, RPCReply):
+            self.response = data.xml
+        else:
+            self.response = str(data)
+        # Send signals to subscribers.
+        self.data_received_event(self.response)
+
+
     def login(self, account=None, app_account=None, flush=True):
         if self.manager:
             return
         self.account = account
         self.manager = self._ncclient_connect_and_login()
 
-    
+
     def send(self, data, ignore_result=True):
         xml_data = to_ele(data)
-        self.rpc_reply = self.manager.dispatch(to_ele(xml_data))
-        if isinstance(self.rpc_reply, RPCReply):
-            self.response = self.rpc_reply.xml
-        else:
-            self.response = str(self.rpc_reply)
+        rpc_reply = self.manager.dispatch(to_ele(xml_data))
+        self._get_response(rpc_reply)
         return None if ignore_result else self.response
     
 
