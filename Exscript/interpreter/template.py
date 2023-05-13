@@ -28,7 +28,7 @@ from .code import Code
 from .execute import Execute
 
 grammar = (
-    ('rpc_tag',             r'</?rpc>'),
+    ('rpc_tag',             r'<\/?rpc>'),
     ('escaped_data',        r'\\.'),
     ('open_curly_bracket',  '{'),
     ('close_curly_bracket', '}'),
@@ -53,12 +53,6 @@ class Template(Scope):
         while 1:
             if self.exit_requested or lexer.current_is('EOF'):
                 break
-            elif lexer.current_is('rpc_tag'):
-                rpc = not rpc
-                next(lexer)
-            elif rpc:
-                buffer += lexer.token()[1]
-                next(lexer)
             elif lexer.next_if('open_curly_bracket'):
                 if buffer.strip() != '':
                     self.add(Execute(lexer, parser, self, buffer))
@@ -66,6 +60,12 @@ class Template(Scope):
                 if isinstance(parent, Code):
                     break
                 self.add(Code(lexer, parser, self))
+            elif lexer.current_is('rpc_tag'):
+                rpc = not rpc
+                next(lexer)
+            elif rpc:
+                buffer += lexer.token()[1]
+                next(lexer)
             elif lexer.current_is('raw_data'):
                 if lexer.token()[1].lstrip().startswith('#'):
                     while not lexer.current_is('newline'):
