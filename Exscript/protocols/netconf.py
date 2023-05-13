@@ -77,7 +77,7 @@ class Netconf(Protocol):
         else:
             self.response = str(data)
         # Send signals to subscribers.
-        self.data_received_event(self.response)
+        self.data_received_event(self.response + '\n')
 
 
     def login(self, account=None, app_account=None, flush=True):
