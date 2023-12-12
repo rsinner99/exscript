@@ -80,6 +80,13 @@ class Netconf(Protocol):
         self.data_received_event(self.response + '\n')
 
 
+    def _dispatch(self, data, ignore_result=False):
+        xml_data = to_ele(data)
+        rpc_reply = self.manager.dispatch(to_ele(xml_data))
+        self._get_response(rpc_reply)
+        return None if ignore_result else self.response
+
+
     def login(self, account=None, app_account=None, flush=True):
         if self.manager:
             return
@@ -87,15 +94,12 @@ class Netconf(Protocol):
         self.manager = self._ncclient_connect_and_login()
 
 
-    def send(self, data, ignore_result=True):
-        xml_data = to_ele(data)
-        rpc_reply = self.manager.dispatch(to_ele(xml_data))
-        self._get_response(rpc_reply)
-        return None if ignore_result else self.response
+    def send(self, data):
+        return self._dispatch(data, ignore_result=True)
     
 
     def execute(self, command, *args, **kwargs):
-        result = self.send(command, ignore_result=False)
+        result = self._dispatch(command, ignore_result=False)
         return 0, result
     
 
