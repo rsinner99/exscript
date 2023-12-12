@@ -53,7 +53,8 @@ _WELL_KNOWN_PORTS = {
     'smtp':   25,
     'http':   80,
     'pop3':  110,
-    'imap':  143
+    'imap':  143,
+    'netconf': 830
 }
 
 def _unquote(string):
